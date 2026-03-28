@@ -1,0 +1,98 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: drone-rental-system
+
+  # 数据源配置
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/drone_rental?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+      username: root
+      password: 123456
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # Redis配置
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms
+          max-idle: 8
+          min-idle: 0
+
+# 文件上传配置
+file:
+  upload:
+    dir: e:/Drone Rental System/drone-rental-system/drone-backend/drone-web/uploads
+    url-prefix: /uploads
+
+# MyBatis Plus配置
+mybatis-plus:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: com.drone.rental.dao.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 日志配置
+logging:
+  level:
+    com.drone.rental: debug
+    com.drone.rental.dao.mapper: debug
+  pattern:
+    console: '%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n'
+
+# AI配置 - Anthropic Claude
+ai:
+  api:
+    key: cr_70fad07899a37de5241244a88f613e1857836d61574bf2dad54437103d4dbf72
+    url: http://47.108.60.237:3300/api/v1/messages
+  model: claude-3-5-sonnet-20241022  # 多模态模型，支持图片识别
+  knowledge:
+    enabled: true  # 是否启用知识库增强
+  embedding:
+    url:  # Embedding API地址（可选，留空则使用伪嵌入）
+    dimension: 768  # 向量维度
+
+# 知识库配置
+knowledge:
+  base:
+    project-path: ..  # 项目相对路径（..表示父目录，因为从drone-web模块运行）
