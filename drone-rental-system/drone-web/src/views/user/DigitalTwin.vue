@@ -2763,8 +2763,8 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   margin-left: auto;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
   padding: 3px 8px;
   border-radius: 12px;
   font-size: 11px;
@@ -2774,7 +2774,7 @@ onUnmounted(() => {
 .live-dot {
   width: 6px;
   height: 6px;
-  background: #ef4444;
+  background: #ffd700;
   border-radius: 50%;
   margin-right: 4px;
   animation: pulse 1.5s ease-in-out infinite;
