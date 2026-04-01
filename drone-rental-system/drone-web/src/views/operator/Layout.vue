@@ -1,11 +1,22 @@
 <template>
   <div class="operator-layout">
-    <div class="sidebar">
-      <div class="sidebar-brand">
-        <i class="bi bi-airplane me-2"></i>无人机租赁
+    <!-- 外部汉堡按钮（用于打开侧边栏） -->
+    <button v-if="!sidebarOpen" class="hamburger-btn" @click="toggleSidebar">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar" :class="{ 'show': sidebarOpen }">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <i class="bi bi-airplane me-2"></i>无人机租赁
+        </div>
+        <button class="sidebar-close-btn" @click="closeSidebar">
+          <i class="bi bi-x"></i>
+        </button>
       </div>
       <nav>
-        <router-link to="/operator" class="nav-link active">
+        <router-link to="/operator" class="nav-link" exact-match>
           <i class="bi bi-speedometer2"></i>
           <span>控制台</span>
         </router-link>
@@ -30,7 +41,7 @@
     </div>
 
     <!-- 主内容区 -->
-    <div class="main-content">
+    <div class="main-content" :class="{ 'pushed': sidebarOpen }">
       <router-view />
     </div>
   </div>
@@ -42,6 +53,15 @@ import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const userInfo = ref({})
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const closeSidebar = () => {
+  sidebarOpen.value = false
+}
 
 const handleLogout = () => {
   if (confirm('确定要退出登录吗？')) {
@@ -75,22 +95,89 @@ onMounted(() => {
   min-height: 100vh;
   width: 100vw;
   overflow-x: hidden;
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(5, 150, 105, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
+  background-attachment: fixed;
 }
 
-/* 侧边栏 - 运营方浅色主题 */
+/* 汉堡菜单按钮 */
+.hamburger-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  width: 45px;
+  height: 45px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #16a34a;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.hamburger-btn:hover {
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 侧边栏内的关闭按钮 */
+.sidebar-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1e293b;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 0 24px;
+  margin-bottom: 30px;
+}
+
+/* 侧边栏 */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 260px;
+  width: 280px;
   background: linear-gradient(180deg, #f0fdf4 0%, #dcfce7 100%);
   border-right: 1px solid #bbf7d0;
   padding: 20px 0;
   z-index: 1000;
-  box-shadow: 2px 0 10px rgba(34, 197, 94, 0.1);
+  box-shadow: 2px 0 20px rgba(34, 197, 94, 0.15);
   display: flex;
   flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.show {
+  transform: translateX(0);
 }
 
 .sidebar-brand {
@@ -127,13 +214,8 @@ nav {
   color: #16a34a;
 }
 
-.nav-link.active {
-  background: linear-gradient(135deg, #16a34a, #22c55e);
-  color: white;
-  box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
-}
-
-.nav-link.router-link-active {
+.nav-link.active,
+.nav-link:deep(.router-link-active) {
   background: linear-gradient(135deg, #16a34a, #22c55e);
   color: white;
   box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
@@ -159,15 +241,22 @@ nav {
   background: #fecaca;
 }
 
+/* 主内容区 */
 .main-content {
   flex: 1;
-  margin-left: 260px;
-  padding: 30px;
+  padding: 90px 30px 30px 30px;
   min-height: 100vh;
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
   position: relative;
   box-sizing: border-box;
-  width: calc(100% - 260px);
+  width: 100%;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.pushed {
+  margin-left: 280px;
+  padding-left: 30px;
+  width: calc(100% - 280px);
 }
 
 /* 运营端独特的背景装饰 */
@@ -187,7 +276,7 @@ nav {
   content: '';
   position: fixed;
   bottom: 0;
-  left: 260px;
+  left: 0;
   width: 400px;
   height: 400px;
   background: radial-gradient(circle at 30% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
@@ -196,30 +285,9 @@ nav {
   z-index: 0;
 }
 
-/* 添加波纹图案 */
-.operator-layout {
-  background-image:
-    radial-gradient(circle at 20% 50%, rgba(5, 150, 105, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.03) 0%, transparent 50%);
-  background-attachment: fixed;
-}
-
 /* 确保内容在装饰层之上 */
 .main-content > * {
   position: relative;
   z-index: 1;
-}
-
-@media (max-width: 992px) {
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.3s;
-  }
-  .sidebar.show {
-    transform: translateX(0);
-  }
-  .main-content {
-    margin-left: 0;
-  }
 }
 </style>

@@ -1,14 +1,24 @@
 <template>
   <div class="admin-layout">
+    <!-- 外部汉堡按钮（用于打开侧边栏） -->
+    <button v-if="!sidebarOpen" class="hamburger-btn" @click="toggleSidebar">
+      <i class="bi bi-list"></i>
+    </button>
+
     <!-- 侧边栏 -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <i class="bi bi-airplane-fill me-2"></i>无人机租赁
+    <aside class="sidebar" :class="{ 'show': sidebarOpen }">
+      <div class="sidebar-header">
+        <div class="sidebar-brand">
+          <i class="bi bi-airplane-fill me-2"></i>无人机租赁
+        </div>
+        <button class="sidebar-close-btn" @click="closeSidebar">
+          <i class="bi bi-x"></i>
+        </button>
       </div>
 
       <nav class="sidebar-nav">
         <div class="nav-section">管理功能</div>
-        <router-link to="/admin" class="nav-link" exact>
+        <router-link to="/admin" class="nav-link" exact-match>
           <i class="bi bi-speedometer2"></i>
           <span>仪表盘</span>
         </router-link>
@@ -70,7 +80,7 @@
     </aside>
 
     <!-- 主内容区 -->
-    <div class="main-content">
+    <div class="main-content" :class="{ 'pushed': sidebarOpen }">
       <router-view />
     </div>
   </div>
@@ -85,6 +95,15 @@ const router = useRouter()
 const route = useRoute()
 const userInfo = ref({})
 const unreadCount = ref(0)
+const sidebarOpen = ref(false)
+
+const toggleSidebar = () => {
+  sidebarOpen.value = !sidebarOpen.value
+}
+
+const closeSidebar = () => {
+  sidebarOpen.value = false
+}
 
 const handleLogout = () => {
   if (confirm('确定要退出登录吗？')) {
@@ -153,21 +172,83 @@ watch(() => route.path, () => {
   background-attachment: fixed;
 }
 
-/* 侧边栏 - 管理员浅色主题 */
+/* 汉堡菜单按钮 */
+.hamburger-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 999;
+  width: 45px;
+  height: 45px;
+  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  color: #2563eb;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  backdrop-filter: blur(10px);
+}
+
+.hamburger-btn:hover {
+  background: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* 侧边栏内的关闭按钮 */
+.sidebar-close-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1e293b;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 0 24px;
+  margin-bottom: 30px;
+}
+
+/* 侧边栏 */
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 260px;
+  width: 280px;
   background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
   border-right: 1px solid #bfdbfe;
   padding: 20px 0;
   z-index: 1000;
-  box-shadow: 2px 0 10px rgba(59, 130, 246, 0.1);
+  box-shadow: 2px 0 20px rgba(59, 130, 246, 0.15);
   display: flex;
   flex-direction: column;
-  flex-shrink: 0;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.show {
+  transform: translateX(0);
 }
 
 .sidebar-brand {
@@ -218,7 +299,7 @@ watch(() => route.path, () => {
   color: #2563eb;
 }
 
-.nav-link.router-link-active,
+.nav-link:deep(.router-link-active),
 .nav-link.active {
   background: linear-gradient(135deg, #2563eb, #3b82f6);
   color: white;
@@ -263,14 +344,20 @@ watch(() => route.path, () => {
 /* 主内容区 */
 .main-content {
   flex: 1;
-  margin-left: 260px;
-  padding: 30px;
+  padding: 90px 30px 30px 30px;
   min-height: 100vh;
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%);
   box-sizing: border-box;
-  width: calc(100% - 260px);
+  width: 100%;
   position: relative;
   z-index: 1;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.pushed {
+  margin-left: 280px;
+  padding-left: 30px;
+  width: calc(100% - 280px);
 }
 
 /* 管理员页面独特的背景装饰 */
@@ -290,7 +377,7 @@ watch(() => route.path, () => {
   content: '';
   position: fixed;
   bottom: 0;
-  left: 260px;
+  left: 0;
   width: 400px;
   height: 400px;
   background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);

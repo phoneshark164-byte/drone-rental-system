@@ -170,43 +170,47 @@
     </section>
 
     <!-- 数字孪生入口 -->
-    <section class="digital-twin-promo-section py-5">
+    <section class="digital-twin-section py-5">
       <div class="container">
-        <div class="digital-twin-card">
-          <div class="row align-items-center">
-            <div class="col-lg-6">
-              <div class="promo-content">
-                <span class="promo-badge">
-                  <i class="bi bi-stars me-2"></i>创新功能
-                </span>
-                <h2 class="promo-title">智慧农业数字孪生平台</h2>
-                <p class="promo-desc">
-                  3D可视化 · 实时监控 · 数据分析
-                </p>
-                <ul class="promo-features">
-                  <li><i class="bi bi-check-circle-fill"></i>实时无人机状态监控</li>
-                  <li><i class="bi bi-check-circle-fill"></i>3D地图可视化展示</li>
-                  <li><i class="bi bi-check-circle-fill"></i>飞行轨迹回放分析</li>
-                  <li><i class="bi bi-check-circle-fill"></i>多专题模式切换</li>
-                </ul>
-                <router-link to="/user/digital-twin" class="btn btn-promo">
-                  <i class="bi bi-globe-americas me-2"></i>体验数字孪生
-                  <i class="bi bi-arrow-right ms-2"></i>
-                </router-link>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="promo-visual">
-                <div class="visual-circle">
-                  <div class="visual-inner">
-                    <i class="bi bi-airplane-engines-fill"></i>
-                  </div>
+        <div class="dt-header-wrap">
+          <div class="dt-title-group">
+            <h2 class="dt-title">数字孪生</h2>
+            <p class="dt-subtitle">实时监控无人机作业状态，让每一次飞行都清晰可见</p>
+          </div>
+        </div>
+
+        <div class="dt-content-row">
+          <div class="dt-desc-col">
+            <p class="dt-desc-title">全方位监控</p>
+            <p class="dt-desc-text">通过数字孪生技术，实时展示无人机飞行轨迹、作业状态和数据统计，让每一次飞行都清晰可见。</p>
+            <p class="dt-desc-title">智能分析</p>
+            <p class="dt-desc-text">基于大数据和AI算法，对飞行数据进行深度分析，提供智能化的运营决策支持。</p>
+          </div>
+          <div class="dt-circle-col">
+            <router-link to="/user/digital-twin" class="dt-circle-wrap">
+              <div class="dt-main-circle">
+                <div class="dt-circle-inner">
+                  <i class="bi bi-cpu-fill dt-main-icon"></i>
+                  <span class="dt-circle-text">点击进入</span>
                 </div>
-                <div class="float-icon icon-1"><i class="bi bi-geo-alt-fill"></i></div>
-                <div class="float-icon icon-2"><i class="bi bi-activity"></i></div>
-                <div class="float-icon icon-3"><i class="bi bi-graph-up"></i></div>
               </div>
-            </div>
+              <div class="dt-float-icon dt-icon-1">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>实时定位</span>
+              </div>
+              <div class="dt-float-icon dt-icon-2">
+                <i class="bi bi-map-fill"></i>
+                <span>轨迹回放</span>
+              </div>
+              <div class="dt-float-icon dt-icon-3">
+                <i class="bi bi-bar-chart-fill"></i>
+                <span>数据统计</span>
+              </div>
+              <div class="dt-float-icon dt-icon-4">
+                <i class="bi bi-grid-fill"></i>
+                <span>场景切换</span>
+              </div>
+            </router-link>
           </div>
         </div>
       </div>
@@ -1586,169 +1590,207 @@ watch(() => route.query.refresh, (refresh) => {
 }
 
 /* 服务特色 */
+
 /* 数字孪生入口 */
-.digital-twin-promo-section {
-  background: #f8fafc;
+.digital-twin-section {
+  background: white;
+  position: relative;
+  overflow: hidden;
 }
 
-.digital-twin-card {
-  background: transparent;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
-  padding: 20px 0;
+.digital-twin-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(6, 182, 212, 0.02) 100%);
+  z-index: 0;
 }
 
-.promo-badge {
-  display: inline-flex;
+.dt-header-wrap {
+  display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 4px 12px;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: #fff;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 15px;
+  margin-bottom: 35px;
+  position: relative;
+  z-index: 1;
 }
 
-.promo-title {
-  font-size: 24px;
-  font-weight: 600;
+.dt-title-group {
+  text-align: center;
+}
+
+.dt-title {
+  font-size: 36px;
+  font-weight: 700;
   color: #1e293b;
-  margin-bottom: 8px;
+  margin: 0;
 }
 
-.promo-desc {
-  font-size: 14px;
+.dt-subtitle {
+  font-size: 18px;
   color: #64748b;
-  margin-bottom: 20px;
+  margin: 8px 0 0 0;
 }
 
-.promo-features {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.promo-features li {
+.dt-content-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: #475569;
-  font-size: 13px;
+  justify-content: space-between;
+  gap: 60px;
 }
 
-.promo-features li i {
-  color: var(--primary-color);
+.dt-desc-col {
+  flex: 1;
+  max-width: 400px;
 }
 
-.btn-promo {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 24px;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: #fff;
-  border-radius: 10px;
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.3s;
-  border: none;
+.dt-desc-title {
+  font-size: 34px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.dt-desc-text {
+  font-size: 22px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.dt-circle-col {
+  flex-shrink: 0;
+}
+
+.dt-circle-wrap {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  display: block;
   text-decoration: none;
 }
 
-.btn-promo:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.25);
-  color: #fff;
-}
-
-.promo-visual {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  min-height: 350px;
-}
-
-.visual-circle {
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.05) 100%);
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  animation: pulse 3s ease-in-out infinite;
-}
-
-.visual-inner {
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 64px;
-  animation: float 4s ease-in-out infinite;
-}
-
-.float-icon {
+.dt-main-circle {
   position: absolute;
-  width: 50px;
-  height: 50px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
-  background: #fff;
+  background: linear-gradient(135deg, #3b82f6, #06b6d4);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #3b82f6;
+  box-shadow: 0 8px 40px rgba(59, 130, 246, 0.3);
+  animation: dt-pulse 2s ease-in-out infinite;
+}
+
+.dt-circle-inner {
+  text-align: center;
+  color: white;
+}
+
+.dt-main-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.dt-circle-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dt-float-icon {
+  position: absolute;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   font-size: 20px;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s;
 }
 
-.float-icon.icon-1 {
-  top: 20px;
-  right: 40px;
-  animation: float 3s ease-in-out infinite 0s;
+.dt-float-icon span {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
-.float-icon.icon-2 {
-  bottom: 40px;
-  left: 30px;
-  animation: float 3s ease-in-out infinite 1s;
+.dt-icon-1 {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: dt-float1 3s ease-in-out infinite;
 }
 
-.float-icon.icon-3 {
+.dt-icon-2 {
   top: 50%;
-  right: 10px;
-  animation: float 3s ease-in-out infinite 2s;
+  right: 0;
+  transform: translateY(-50%);
+  animation: dt-float2 3s ease-in-out infinite 0.5s;
 }
 
-@keyframes pulse {
+.dt-icon-3 {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: dt-float3 3s ease-in-out infinite 1s;
+}
+
+.dt-icon-4 {
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  animation: dt-float4 3s ease-in-out infinite 1.5s;
+}
+
+.dt-circle-wrap:hover .dt-float-icon {
+  border-color: #3b82f6;
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes dt-pulse {
   0%, 100% {
-    transform: scale(1);
-    opacity: 1;
+    box-shadow: 0 8px 40px rgba(59, 130, 246, 0.3);
+    transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    transform: scale(1.05);
-    opacity: 0.8;
+    box-shadow: 0 8px 50px rgba(59, 130, 246, 0.4);
+    transform: translate(-50%, -50%) scale(1.05);
   }
 }
 
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-15px);
-  }
+@keyframes dt-float1 {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+@keyframes dt-float2 {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50% { transform: translateY(-50%) translateX(10px); }
+}
+
+@keyframes dt-float3 {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+@keyframes dt-float4 {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50% { transform: translateY(-50%) translateX(-10px); }
 }
 
 .features-section {
@@ -1981,6 +2023,44 @@ watch(() => route.query.refresh, (refresh) => {
   }
   .section-title {
     font-size: 28px;
+  }
+  .dt-header-wrap {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .dt-title {
+    font-size: 24px;
+  }
+  .dt-content-row {
+    flex-direction: column;
+    gap: 40px;
+  }
+  .dt-desc-col {
+    max-width: 100%;
+    text-align: center;
+  }
+  .dt-circle-wrap {
+    width: 280px;
+    height: 280px;
+  }
+  .dt-main-circle {
+    width: 130px;
+    height: 130px;
+  }
+  .dt-main-icon {
+    font-size: 36px;
+  }
+  .dt-circle-text {
+    font-size: 12px;
+  }
+  .dt-float-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+  }
+  .dt-float-icon span {
+    font-size: 10px;
   }
 }
 
