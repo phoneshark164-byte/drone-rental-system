@@ -137,7 +137,7 @@ onMounted(() => {
     actualDuration: 60,
     amount: '30.00',
     status: 3,
-    startLocation: '四川大学锦江学院',
+    startLocation: '西部科技园',
     endLocation: '西青区大学城',
     startLatitude: '39.0842',
     startLongitude: '117.2009',

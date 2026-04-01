@@ -6,7 +6,7 @@
     </div>
     <div class="text-muted">
       <i class="bi bi-geo-alt me-2"></i>
-      <span>{{ userInfo.areaName || '四川大学锦江学院' }}</span>
+      <span>{{ userInfo.areaName || '西部科技园' }}</span>
     </div>
   </div>
 
@@ -124,11 +124,11 @@ let currentVehicle = null // 当前显示的无人机信息
 
 // 模拟无人机数据
 const mockVehicleData = ref([
-  { id: 1, droneNo: 'DRONE-E001', brand: '道通', model: 'EVO II', imageUrl: '/img/train/0005.jpg', lat: 29.544, lng: 103.765, batteryLevel: 95, status: 'available', location: '四川大学锦江学院' },
-  { id: 2, droneNo: 'DRONE-E002', brand: '大疆', model: 'Mini 3', imageUrl: '/img/train/0006.jpg', lat: 29.545, lng: 103.766, batteryLevel: 88, status: 'in-use', location: '四川大学锦江学院' },
-  { id: 3, droneNo: 'DRONE-E003', brand: '大疆', model: 'Mavic 3', imageUrl: '/img/train/0001.jpg', lat: 29.546, lng: 103.767, batteryLevel: 25, status: 'available', location: '四川大学锦江学院' },
-  { id: 4, droneNo: 'DRONE-E004', brand: '道通', model: 'Lite+', imageUrl: '/img/train/0008.jpg', lat: 29.547, lng: 103.768, batteryLevel: 65, status: 'available', location: '四川大学锦江学院' },
-  { id: 5, droneNo: 'DRONE-E005', brand: '大疆', model: 'Air 3', imageUrl: '/img/train/0003.jpg', lat: 29.543, lng: 103.764, batteryLevel: 0, status: 'repair', location: '四川大学锦江学院' }
+  { id: 1, droneNo: 'DRONE-E001', brand: '道通', model: 'EVO II', imageUrl: '/img/train/0005.jpg', lat: 29.544, lng: 103.765, batteryLevel: 95, status: 'available', location: '西部科技园' },
+  { id: 2, droneNo: 'DRONE-E002', brand: '大疆', model: 'Mini 3', imageUrl: '/img/train/0006.jpg', lat: 29.545, lng: 103.766, batteryLevel: 88, status: 'in-use', location: '西部科技园' },
+  { id: 3, droneNo: 'DRONE-E003', brand: '大疆', model: 'Mavic 3', imageUrl: '/img/train/0001.jpg', lat: 29.546, lng: 103.767, batteryLevel: 25, status: 'available', location: '西部科技园' },
+  { id: 4, droneNo: 'DRONE-E004', brand: '道通', model: 'Lite+', imageUrl: '/img/train/0008.jpg', lat: 29.547, lng: 103.768, batteryLevel: 65, status: 'available', location: '西部科技园' },
+  { id: 5, droneNo: 'DRONE-E005', brand: '大疆', model: 'Air 3', imageUrl: '/img/train/0003.jpg', lat: 29.543, lng: 103.764, batteryLevel: 0, status: 'repair', location: '西部科技园' }
 ])
 
 // 从API同步无人机数据
