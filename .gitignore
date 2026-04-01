@@ -38,10 +38,10 @@ htmlcov/
 # YOLOv8
 runs/
 datasets/
-*.pt
-*.pth
-*.onnx
-*.engine
+#*.pt
+#*.pth
+#*.onnx
+#*.engine
 
 # OS
 .DS_Store
