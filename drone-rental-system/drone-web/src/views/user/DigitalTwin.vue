@@ -2710,6 +2710,44 @@ onUnmounted(() => {
   border-color: transparent;
 }
 
+/* 工具栏图标立体效果 */
+.toolbar-btn .icon-3d {
+  font-size: 1.2em;
+  color: #3b82f6;
+  text-shadow:
+    1px 1px 0px rgba(255, 255, 255, 0.8),
+    2px 2px 0px rgba(59, 130, 246, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.toolbar-btn:hover .icon-3d {
+  color: #ffffff;
+  text-shadow:
+    1px 1px 0px rgba(59, 130, 246, 0.5),
+    2px 2px 0px rgba(6, 182, 212, 0.3),
+    0 0 10px rgba(255, 255, 255, 0.6);
+  transform: scale(1.2) rotateY(15deg);
+}
+
+.toolbar-btn.active .icon-3d {
+  color: #ffffff;
+  text-shadow:
+    1px 1px 0px rgba(59, 130, 246, 0.6),
+    2px 2px 0px rgba(6, 182, 212, 0.4),
+    0 0 15px rgba(255, 255, 255, 0.7);
+  animation: toolbarIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes toolbarIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
 /* 无人机监控盒子 */
 .drone-monitor-box {
   flex-shrink: 0;

@@ -156,8 +156,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { getVehicleMapData, getDashboardStats } from '@/api/admin'
+import { getVehicleMapData, getDashboardStats, getOrderTrends, getVehicleStatusDistribution, getRecentOrders } from '@/api/admin'
 import { getUserInfo, clearLoginInfo } from '@/utils/auth'
+import * as echarts from 'echarts'
 
 // 当前时间 - 用于充电进度实时更新
 const currentTime = ref(Date.now())
@@ -182,17 +183,12 @@ let markers = []
 let infoWindow = null
 let autoRefreshTimer = null
 
+// 图表实例
+let orderTrendChart = null
+let vehicleStatusChart = null
+
 // 最近订单
 const recentOrders = ref([])
-
-// 模拟订单数据
-const mockOrders = [
-  { id: 1, orderNo: 'DR20260318001', userName: '张三', vehicleNo: 'DRONE-A001', amount: '30.00', status: 3, statusText: '已完成', statusClass: 'success', createTime: '03-18 14:30' },
-  { id: 2, orderNo: 'DR20260318002', userName: '李四', vehicleNo: 'DRONE-A002', amount: '24.00', status: 2, statusText: '使用中', statusClass: 'secondary', createTime: '03-18 14:15' },
-  { id: 3, orderNo: 'DR20260318003', userName: '王五', vehicleNo: 'DRONE-B001', amount: '18.00', status: 1, statusText: '已支付', statusClass: 'info', createTime: '03-18 13:50' },
-  { id: 4, orderNo: 'DR20260318004', userName: '赵六', vehicleNo: 'DRONE-B002', amount: '36.00', status: 3, statusText: '已完成', statusClass: 'success', createTime: '03-18 13:20' },
-  { id: 5, orderNo: 'DR20260318005', userName: '孙七', vehicleNo: 'DRONE-C001', amount: '27.00', status: 0, statusText: '待支付', statusClass: 'warning', createTime: '03-18 12:45' }
-]
 
 // 模拟无人机位置数据
 const mockVehicleData = ref([
@@ -267,13 +263,48 @@ const loadDashboardStats = async () => {
 // 加载最近订单
 const loadRecentOrders = async () => {
   loadingOrders.value = true
-  // TODO: 调用API获取实际数据
-  await new Promise(resolve => setTimeout(resolve, 500))
-  recentOrders.value = mockOrders.map(order => ({
-    ...order,
-    shortOrderNo: order.orderNo.length > 12 ? order.orderNo.substring(0, 8) + '...' : order.orderNo
-  }))
-  loadingOrders.value = false
+  try {
+    const res = await getRecentOrders(5)
+    if (res.code === 200 && res.data) {
+      // 状态映射
+      const statusMap = {
+        0: { text: '待支付', class: 'warning' },
+        1: { text: '已支付', class: 'info' },
+        2: { text: '使用中', class: 'secondary' },
+        3: { text: '已完成', class: 'success' },
+        4: { text: '已取消', class: 'danger' }
+      }
+
+      recentOrders.value = res.data.map(order => {
+        const statusInfo = statusMap[order.status] || { text: '未知', class: 'secondary' }
+        // 格式化时间
+        let createTime = ''
+        if (order.createTime) {
+          const date = new Date(order.createTime)
+          createTime = `${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+        }
+
+        return {
+          id: order.id,
+          orderNo: order.orderNo,
+          shortOrderNo: order.orderNo && order.orderNo.length > 12 ? order.orderNo.substring(0, 8) + '...' : order.orderNo,
+          userName: order.userName || '未知',
+          vehicleNo: order.vehicleNo || '未知',
+          amount: order.amount || '0.00',
+          status: order.status,
+          statusText: statusInfo.text,
+          statusClass: statusInfo.class,
+          createTime: createTime
+        }
+      })
+    }
+  } catch (error) {
+    console.error('加载最近订单失败:', error)
+    // 发生错误时使用空数组
+    recentOrders.value = []
+  } finally {
+    loadingOrders.value = false
+  }
 }
 
 // ========== 地图相关函数 ==========
@@ -517,11 +548,208 @@ const refreshVehicleLocations = () => {
   loadVehicleLocations()
 }
 
-// 初始化图表（占位，需要ECharts）
-const initCharts = () => {
-  // TODO: 初始化ECharts图表
-  // 订单趋势图
-  // 状态分布图
+// 初始化图表
+const initCharts = async () => {
+  await nextTick()
+
+  // 初始化订单趋势图
+  const orderTrendDom = document.getElementById('orderTrendChart')
+  if (orderTrendDom) {
+    orderTrendChart = echarts.init(orderTrendDom)
+    await loadOrderTrendChart()
+  }
+
+  // 初始化状态分布图
+  const vehicleStatusDom = document.getElementById('vehicleStatusChart')
+  if (vehicleStatusDom) {
+    vehicleStatusChart = echarts.init(vehicleStatusDom)
+    await loadVehicleStatusChart()
+  }
+
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleChartResize)
+}
+
+// 加载订单趋势图数据
+const loadOrderTrendChart = async () => {
+  try {
+    const res = await getOrderTrends()
+    if (res.code === 200 && res.data) {
+      const { dates, orderCounts, orderAmounts } = res.data
+
+      const option = {
+        tooltip: {
+          trigger: 'axis',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderColor: '#e2e8f0',
+          borderWidth: 1,
+          textStyle: { color: '#1e293b' },
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        legend: {
+          data: ['订单数量', '订单金额'],
+          bottom: 0,
+          textStyle: { color: '#64748b' }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '15%',
+          top: '10%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: dates,
+          axisLine: { lineStyle: { color: '#e2e8f0' } },
+          axisLabel: { color: '#64748b' }
+        },
+        yAxis: [
+          {
+            type: 'value',
+            name: '订单数量',
+            position: 'left',
+            axisLine: { show: false },
+            axisLabel: { color: '#64748b' },
+            splitLine: { lineStyle: { color: '#f1f5f9' } }
+          },
+          {
+            type: 'value',
+            name: '金额(元)',
+            position: 'right',
+            axisLine: { show: false },
+            axisLabel: { color: '#64748b' },
+            splitLine: { show: false }
+          }
+        ],
+        series: [
+          {
+            name: '订单数量',
+            type: 'bar',
+            data: orderCounts,
+            barWidth: '35%',
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#3b82f6' },
+                { offset: 1, color: '#06b6d4' }
+              ]),
+              borderRadius: [6, 6, 0, 0]
+            }
+          },
+          {
+            name: '订单金额',
+            type: 'line',
+            yAxisIndex: 1,
+            data: orderAmounts,
+            smooth: true,
+            symbol: 'circle',
+            symbolSize: 8,
+            lineStyle: {
+              width: 3,
+              color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                { offset: 0, color: '#f59e0b' },
+                { offset: 1, color: '#f97316' }
+              ])
+            },
+            itemStyle: { color: '#f97316' },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: 'rgba(249, 115, 22, 0.3)' },
+                { offset: 1, color: 'rgba(249, 115, 22, 0.05)' }
+              ])
+            }
+          }
+        ]
+      }
+
+      orderTrendChart.setOption(option)
+    }
+  } catch (error) {
+    console.error('加载订单趋势图失败:', error)
+  }
+}
+
+// 加载状态分布图数据
+const loadVehicleStatusChart = async () => {
+  try {
+    const res = await getVehicleStatusDistribution()
+    if (res.code === 200 && res.data) {
+      const { statusNames, statusCounts } = res.data
+
+      const option = {
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderColor: '#e2e8f0',
+          borderWidth: 1,
+          textStyle: { color: '#1e293b' },
+          formatter: '{b}: {c} ({d}%)'
+        },
+        legend: {
+          orient: 'vertical',
+          right: '10%',
+          top: 'center',
+          textStyle: { color: '#64748b' }
+        },
+        color: ['#94a3b8', '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6'],
+        series: [
+          {
+            name: '无人机状态',
+            type: 'pie',
+            radius: ['45%', '70%'],
+            center: ['35%', '50%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+              borderRadius: 10,
+              borderColor: '#fff',
+              borderWidth: 2
+            },
+            label: {
+              show: true,
+              position: 'outside',
+              formatter: '{b}\n{c}台',
+              color: '#64748b',
+              fontSize: 13
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 16,
+                fontWeight: 'bold'
+              },
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.1)'
+              }
+            },
+            labelLine: {
+              show: true,
+              length: 15,
+              length2: 10,
+              smooth: 0.2
+            },
+            data: statusNames.map((name, index) => ({
+              name,
+              value: statusCounts[index]
+            }))
+          }
+        ]
+      }
+
+      vehicleStatusChart.setOption(option)
+    }
+  } catch (error) {
+    console.error('加载状态分布图失败:', error)
+  }
+}
+
+// 处理图表自适应
+const handleChartResize = () => {
+  orderTrendChart?.resize()
+  vehicleStatusChart?.resize()
 }
 
 onMounted(async () => {
@@ -571,6 +799,19 @@ onUnmounted(() => {
     map.destroy()
     map = null
   }
+
+  // 清理图表
+  if (orderTrendChart) {
+    orderTrendChart.dispose()
+    orderTrendChart = null
+  }
+  if (vehicleStatusChart) {
+    vehicleStatusChart.dispose()
+    vehicleStatusChart = null
+  }
+
+  // 移除窗口大小监听
+  window.removeEventListener('resize', handleChartResize)
 })
 </script>
 

@@ -47,7 +47,7 @@
               v-model="systemConfig.name"
               type="text"
               class="form-control"
-              style="width: 300px"
+              style="width: 400px; flex-shrink: 0;"
               :disabled="!editMode"
             />
           </div>
@@ -56,7 +56,7 @@
               <h5>默认押金金额</h5>
               <p>用户注册时需要缴纳的押金金额</p>
             </div>
-            <div class="input-group" style="width: 200px">
+            <div class="input-group" style="width: 220px; flex-shrink: 0;">
               <input
                 v-model.number="systemConfig.deposit"
                 type="number"
@@ -98,8 +98,9 @@
               v-model="mapConfig.apiKey"
               type="text"
               class="form-control"
-              style="width: 400px"
+              style="width: 500px; flex-shrink: 0;"
               :disabled="!editMode"
+              placeholder="请输入高德地图API Key"
             />
           </div>
           <div class="config-item">
@@ -111,8 +112,9 @@
               v-model="mapConfig.securityCode"
               type="text"
               class="form-control"
-              style="width: 400px"
+              style="width: 500px; flex-shrink: 0;"
               :disabled="!editMode"
+              placeholder="请输入高德地图安全密钥"
             />
           </div>
         </div>
@@ -278,6 +280,10 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.admin-settings {
+  width: 100%;
+}
+
 .page-header {
   margin-bottom: 24px;
 }
@@ -288,20 +294,21 @@ onMounted(() => {
 }
 
 .settings-content {
-  max-width: 900px;
+  max-width: 100%;
 }
 
 .setting-section {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 28px;
   margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
 .section-title {
   font-weight: 600;
-  margin-bottom: 20px;
+  font-size: 18px;
+  margin-bottom: 24px;
   padding-bottom: 15px;
   border-bottom: 1px solid #e2e8f0;
   color: #1e293b;
@@ -309,60 +316,73 @@ onMounted(() => {
 
 .rules-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
 }
 
 .rule-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
 }
 
 .rule-label {
   font-weight: 500;
-  font-size: 14px;
+  font-size: 15px;
   color: #475569;
 }
 
 .rule-input {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .rule-input .form-control {
   flex: 1;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+  padding: 8px 14px;
 }
 
 .rule-unit {
   color: #64748b;
   font-size: 14px;
   white-space: nowrap;
+  min-width: 60px;
 }
 
 .config-list {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
 
 .config-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  gap: 24px;
 }
 
-.config-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.config-info {
+  flex: 1;
+  min-width: 200px;
 }
 
 .config-info h5 {
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  font-size: 16px;
+  color: #1e293b;
 }
 
 .config-info p {
@@ -371,13 +391,56 @@ onMounted(() => {
   font-size: 14px;
 }
 
+.config-item .form-control {
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+  padding: 8px 14px;
+}
+
+.config-item .input-group {
+  flex-shrink: 0;
+}
+
+.config-item .input-group .form-control {
+  height: 42px;
+  border-radius: 8px 0 0 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+  padding: 8px 14px;
+}
+
+.config-item .input-group-text {
+  height: 42px;
+  border-radius: 0 8px 8px 0;
+  border: 1px solid #e2e8f0;
+  border-left: none;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.config-item .form-check-input {
+  width: 50px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
 .settings-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 20px;
+  padding: 24px 28px;
   background: white;
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.settings-actions .btn {
+  height: 44px;
+  padding: 10px 28px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
 }
 </style>

@@ -1267,4 +1267,82 @@ public class AdminController {
 
         return ApiResult.success(stats);
     }
+
+    // ==================== 仪表板图表API ====================
+
+    /**
+     * 获取近7天订单趋势
+     */
+    @GetMapping("/admin/api/dashboard/order-trends")
+    @ResponseBody
+    public ApiResult<java.util.Map<String, Object>> getOrderTrends() {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        java.util.List<String> dates = new java.util.ArrayList<>();
+        java.util.List<Integer> orderCounts = new java.util.ArrayList<>();
+        java.util.List<java.math.BigDecimal> orderAmounts = new java.util.ArrayList<>();
+
+        // 获取近7天的日期
+        for (int i = 6; i >= 0; i--) {
+            java.time.LocalDateTime date = java.time.LocalDateTime.now().minusDays(i);
+            java.time.LocalDateTime dayStart = date.withHour(0).withMinute(0).withSecond(0);
+            java.time.LocalDateTime dayEnd = date.withHour(23).withMinute(59).withSecond(59);
+
+            // 格式化日期为 MM-dd
+            String dateStr = date.format(java.time.format.DateTimeFormatter.ofPattern("MM-dd"));
+            dates.add(dateStr);
+
+            // 统计当天订单数量
+            long count = orderService.lambdaQuery()
+                    .ge(DroneOrder::getCreateTime, dayStart)
+                    .le(DroneOrder::getCreateTime, dayEnd)
+                    .count();
+            orderCounts.add((int) count);
+
+            // 统计当天订单总金额
+            java.math.BigDecimal amount = orderService.lambdaQuery()
+                    .ge(DroneOrder::getCreateTime, dayStart)
+                    .le(DroneOrder::getCreateTime, dayEnd)
+                    .list()
+                    .stream()
+                    .map(DroneOrder::getAmount)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+            orderAmounts.add(amount != null ? amount : java.math.BigDecimal.ZERO);
+        }
+
+        result.put("dates", dates);
+        result.put("orderCounts", orderCounts);
+        result.put("orderAmounts", orderAmounts);
+
+        return ApiResult.success(result);
+    }
+
+    /**
+     * 获取无人机状态分布
+     */
+    @GetMapping("/admin/api/dashboard/vehicle-status")
+    @ResponseBody
+    public ApiResult<java.util.Map<String, Object>> getVehicleStatusDistribution() {
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+
+        // 统计各状态无人机数量
+        long availableCount = vehicleService.lambdaQuery().eq(DroneVehicle::getStatus, 1).count();
+        long inUseCount = vehicleService.lambdaQuery().eq(DroneVehicle::getStatus, 2).count();
+        long chargingCount = vehicleService.lambdaQuery().eq(DroneVehicle::getStatus, 3).count();
+        long faultCount = vehicleService.lambdaQuery().eq(DroneVehicle::getStatus, 0).count();
+        long maintenanceCount = vehicleService.lambdaQuery().eq(DroneVehicle::getStatus, 4).count();
+
+        java.util.List<String> statusNames = java.util.Arrays.asList("故障", "可用", "使用中", "充电中", "维护中");
+        java.util.List<Integer> statusCounts = java.util.Arrays.asList(
+                (int) faultCount,
+                (int) availableCount,
+                (int) inUseCount,
+                (int) chargingCount,
+                (int) maintenanceCount
+        );
+
+        result.put("statusNames", statusNames);
+        result.put("statusCounts", statusCounts);
+
+        return ApiResult.success(result);
+    }
 }

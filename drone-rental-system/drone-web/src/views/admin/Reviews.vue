@@ -54,13 +54,13 @@
       <table class="table table-hover">
         <thead>
           <tr>
-            <th width="150">订单号</th>
-            <th width="100">无人机</th>
-            <th width="120">用户</th>
-            <th width="120">评分</th>
-            <th>评价内容</th>
-            <th width="80">状态</th>
-            <th width="150">操作</th>
+            <th width="14%">订单号</th>
+            <th width="14%">无人机</th>
+            <th width="14%">用户</th>
+            <th width="14%">评分</th>
+            <th width="15%">评价内容</th>
+            <th width="15%">状态</th>
+            <th width="14%">操作</th>
           </tr>
         </thead>
         <tbody>
@@ -86,16 +86,10 @@
             </td>
             <td>
               <div class="review-content-preview">
-                <p>{{ review.content || '无文字内容' }}</p>
-                <div v-if="review.tags" class="review-tags">
-                  <span v-for="tag in review.tags.split(',').slice(0, 3)" :key="tag" class="tag-badge">
-                    {{ getTagLabel(tag) }}
-                  </span>
-                </div>
-                <div v-if="review.adminReply" class="admin-reply-preview">
-                  <i class="bi bi-chat-right-quote"></i>
-                  <span>已回复</span>
-                </div>
+                <span class="reviewed-badge" :class="{ 'replied': review.adminReply }" @click="viewReview(review)">
+                  <i :class="review.adminReply ? 'bi bi-chat-check' : 'bi bi-chat-dots'" class="me-1"></i>
+                  {{ review.adminReply ? '已回复' : '已评价' }}
+                </span>
               </div>
             </td>
             <td>
@@ -470,6 +464,7 @@ onMounted(() => {
 }
 
 .page-header h3 {
+  font-weight: 600;
   margin: 0;
 }
 
@@ -523,6 +518,12 @@ onMounted(() => {
   font-weight: 600;
   color: #475569;
   border-bottom: 1px solid #e2e8f0;
+  text-align: center;
+}
+
+.reviews-table-wrapper td {
+  vertical-align: middle;
+  text-align: center;
 }
 
 .user-info {
@@ -533,11 +534,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 5px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .rating-text {
   font-size: 13px;
   color: #64748b;
+  margin-left: 3px;
 }
 
 .review-content-preview {
@@ -552,6 +556,38 @@ onMounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 200px;
+}
+
+.reviewed-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: #eff6ff;
+  color: #3b82f6;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.reviewed-badge:hover {
+  background: #3b82f6;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.reviewed-badge.replied {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.reviewed-badge.replied:hover {
+  background: #059669;
+  color: white;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
 }
 
 .review-tags {

@@ -344,7 +344,7 @@ watch(() => route.path, () => {
 /* 主内容区 */
 .main-content {
   flex: 1;
-  padding: 90px 30px 30px 30px;
+  padding: 90px 30px 30px 80px;
   min-height: 100vh;
   background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%);
   box-sizing: border-box;

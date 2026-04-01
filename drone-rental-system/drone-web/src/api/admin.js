@@ -245,3 +245,19 @@ export function deleteReview(id) {
 export function getReviewStats() {
   return request.get('/admin/api/review/stats')
 }
+
+// ==================== 仪表板图表API ====================
+
+/**
+ * 获取近7天订单趋势
+ */
+export function getOrderTrends() {
+  return request.get('/admin/api/dashboard/order-trends')
+}
+
+/**
+ * 获取无人机状态分布
+ */
+export function getVehicleStatusDistribution() {
+  return request.get('/admin/api/dashboard/vehicle-status')
+}

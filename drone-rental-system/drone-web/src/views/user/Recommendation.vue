@@ -34,9 +34,10 @@
       <!-- 推荐内容 -->
       <section class="recommendation-body">
         <div class="container">
+          <!-- 第一行：筛选条件 + 智能推荐系统 -->
           <div class="row">
             <!-- 左侧：推荐表单 -->
-            <div class="col-lg-4">
+            <div class="col-lg-6">
               <div class="recommendation-form card">
                 <div class="card-header">
                   <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>筛选条件</h5>
@@ -112,38 +113,10 @@
                   </button>
                 </div>
               </div>
-
-              <!-- 推荐历史 -->
-              <div class="card mt-4">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>推荐历史</h6>
-                  <small v-if="history.length > 0" class="text-muted">最近5次</small>
-                </div>
-                <div class="card-body">
-                  <div v-if="history.length === 0" class="empty-history text-center py-4">
-                    <i class="bi bi-clock-history"></i>
-                    <p class="mb-0">暂无推荐历史</p>
-                  </div>
-                  <div v-else class="history-list">
-                    <div v-for="item in history.slice(0, 5)" :key="item.id" class="history-item">
-                      <div class="history-left">
-                        <div class="history-scenario">
-                          <i :class="getScenarioIcon(item.scenario)" class="me-1"></i>
-                          {{ getScenarioName(item.scenario) }}
-                        </div>
-                        <div class="history-time">{{ formatTime(item.createTime) }}</div>
-                      </div>
-                      <div class="history-meta">
-                        <span v-if="item.budget" class="history-budget">¥{{ item.budget }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <!-- 右侧：推荐结果 -->
-            <div class="col-lg-8">
+            <div class="col-lg-6">
               <div class="recommendation-results">
                 <!-- 推荐结果头部 -->
                 <div class="results-header" v-if="hasSearched">
@@ -322,6 +295,38 @@
                   <button class="btn btn-outline-primary" @click="resetFilters">
                     <i class="bi bi-arrow-clockwise me-1"></i>重新筛选
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 第二行：推荐历史（单独占据全宽） -->
+          <div class="row mt-4">
+            <div class="col-lg-12">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>推荐历史</h6>
+                  <small v-if="history.length > 0" class="text-muted">最近5次</small>
+                </div>
+                <div class="card-body">
+                  <div v-if="history.length === 0" class="empty-history text-center py-4">
+                    <i class="bi bi-clock-history"></i>
+                    <p class="mb-0">暂无推荐历史</p>
+                  </div>
+                  <div v-else class="history-list-wide">
+                    <div v-for="item in history.slice(0, 5)" :key="item.id" class="history-item-wide">
+                      <div class="history-left">
+                        <div class="history-scenario">
+                          <i :class="getScenarioIcon(item.scenario)" class="me-1"></i>
+                          {{ getScenarioName(item.scenario) }}
+                        </div>
+                        <div class="history-time">{{ formatTime(item.createTime) }}</div>
+                      </div>
+                      <div class="history-meta">
+                        <span v-if="item.budget" class="history-budget">¥{{ item.budget }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -618,19 +623,21 @@ onMounted(() => {
 
 .user-recommendation .page-header-section {
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  padding: 40px 0;
-  margin-bottom: 30px;
+  padding: 50px 0;
+  margin-bottom: 40px;
 }
 
 .user-recommendation .page-title {
   color: white;
   font-weight: 700;
   margin-bottom: 10px;
+  font-size: 36px;
 }
 
 .user-recommendation .page-subtitle {
   color: rgba(255,255,255,0.9);
   margin: 0;
+  font-size: 18px;
 }
 
 .user-recommendation .header-stats {
@@ -645,18 +652,19 @@ onMounted(() => {
 
 .user-recommendation .stat-number {
   display: block;
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: 700;
   color: white;
 }
 
 .user-recommendation .stat-label {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: rgba(255,255,255,0.8);
 }
 
 .user-recommendation .recommendation-body {
-  padding-bottom: 40px;
+  padding-bottom: 60px;
+  min-height: calc(100vh - 200px);
 }
 
 /* 推荐表单卡片 */
@@ -670,15 +678,18 @@ onMounted(() => {
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   color: white;
   border: none;
-  border-radius: 16px 16px 0 0;
-  padding: 15px 20px;
+  padding: 18px 22px;
+}
+
+.user-recommendation .recommendation-form .card-header h5 {
+  font-size: 18px;
 }
 
 /* 场景网格 */
 .user-recommendation .scenario-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .user-recommendation .scenario-card {
@@ -686,7 +697,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 15px 10px;
+  padding: 18px 12px;
   border: 2px solid #e9ecef;
   border-radius: 12px;
   cursor: pointer;
@@ -711,16 +722,16 @@ onMounted(() => {
 }
 
 .user-recommendation .scenario-icon {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .user-recommendation .scenario-icon i {
-  font-size: 22px;
+  font-size: 24px;
   color: var(--primary-color);
 }
 
 .user-recommendation .scenario-name {
-  font-size: 12px;
+  font-size: 13px;
   color: #495057;
   font-weight: 500;
   margin-bottom: 2px;
@@ -769,10 +780,11 @@ onMounted(() => {
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
   border: none;
   color: white;
-  padding: 12px;
+  padding: 14px;
   border-radius: 12px;
   font-weight: 600;
   transition: all 0.2s;
+  font-size: 16px;
 }
 
 .user-recommendation .btn-recommend:hover:not(:disabled) {
@@ -786,11 +798,15 @@ onMounted(() => {
 
 /* 推荐结果 */
 .user-recommendation .recommendation-results {
-  min-height: 500px;
+  min-height: 420px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 20px;
 }
 
 .user-recommendation .results-header {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .user-recommendation .results-header h4 {
@@ -814,18 +830,18 @@ onMounted(() => {
 .user-recommendation .empty-state,
 .user-recommendation .initial-state {
   text-align: center;
-  padding: 40px 20px;
+  padding: 45px 20px;
   color: #6c757d;
 }
 
 .user-recommendation .welcome-section {
-  margin-bottom: 35px;
+  margin-bottom: 38px;
 }
 
 .user-recommendation .welcome-icon {
-  width: 90px;
-  height: 90px;
-  margin: 0 auto 20px;
+  width: 105px;
+  height: 105px;
+  margin: 0 auto 24px;
   background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   border-radius: 50%;
   display: flex;
@@ -834,35 +850,41 @@ onMounted(() => {
 }
 
 .user-recommendation .welcome-icon i {
-  font-size: 40px;
+  font-size: 48px;
   color: white;
 }
 
 .user-recommendation .welcome-section h3 {
   color: #495057;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  font-size: 27px;
 }
 
 .user-recommendation .welcome-section p {
   color: #6c757d;
+  font-size: 14px;
 }
 
 /* 初始介绍卡片 */
 .user-recommendation .intro-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 19px;
 }
 
 .user-recommendation .intro-card {
   background: white;
-  padding: 30px 25px;
-  border-radius: 16px;
+  padding: 28px 12px;
+  border-radius: 12px;
   text-align: center;
   box-shadow: 0 4px 15px rgba(0,0,0,0.08);
   transition: all 0.3s;
   cursor: pointer;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .user-recommendation .intro-card:hover {
@@ -871,22 +893,22 @@ onMounted(() => {
 }
 
 .user-recommendation .intro-card h5 {
-  font-size: 16px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
   color: #495057;
   font-weight: 600;
 }
 
 .user-recommendation .intro-card p {
-  font-size: 13px;
+  font-size: 12px;
   color: #6c757d;
   margin: 0;
 }
 
 .user-recommendation .intro-icon {
-  width: 65px;
-  height: 65px;
-  margin: 0 auto 18px;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 13px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -894,7 +916,7 @@ onMounted(() => {
 }
 
 .user-recommendation .intro-icon i {
-  font-size: 28px;
+  font-size: 32px;
   color: white;
 }
 
@@ -935,7 +957,7 @@ onMounted(() => {
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   position: relative;
   transition: transform 0.2s;
@@ -966,7 +988,7 @@ onMounted(() => {
 
 .user-recommendation .vehicle-image {
   position: relative;
-  height: 220px;
+  height: 240px;
   overflow: hidden;
   background: #f8f9fa;
 }
@@ -1090,9 +1112,37 @@ onMounted(() => {
   height: 50px;
 }
 
+/* 空状态图标 */
+.user-recommendation .empty-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 25px;
+  background: linear-gradient(135deg, #e9ecef, #dee2e6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-recommendation .empty-icon i {
+  font-size: 40px;
+  color: #adb5bd;
+}
+
+.user-recommendation .empty-state h5 {
+  font-size: 20px;
+  color: #495057;
+  margin-bottom: 12px;
+}
+
+.user-recommendation .empty-state p {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
 /* 历史记录 */
 .user-recommendation .history-list {
-  max-height: 200px;
+  max-height: 320px;
   overflow-y: auto;
 }
 
@@ -1100,7 +1150,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 14px 0;
   border-bottom: 1px solid #f1f3f5;
 }
 
@@ -1114,21 +1164,21 @@ onMounted(() => {
 }
 
 .user-recommendation .history-scenario {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: #495057;
 }
 
 .user-recommendation .history-time {
-  font-size: 11px;
+  font-size: 12px;
   color: #6c757d;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .user-recommendation .history-meta {
   display: flex;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: #6c757d;
 }
 
@@ -1139,12 +1189,38 @@ onMounted(() => {
 
 .user-recommendation .empty-history {
   color: #adb5bd;
+  padding: 40px 0;
 }
 
 .user-recommendation .empty-history i {
-  font-size: 32px;
+  font-size: 40px;
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+/* 宽版历史记录 */
+.user-recommendation .history-list-wide {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.user-recommendation .history-item-wide {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  background: #fafbfd;
+  transition: all 0.2s;
+}
+
+.user-recommendation .history-item-wide:hover {
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
 }
 
 /* Toast 通知 */

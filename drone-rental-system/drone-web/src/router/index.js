@@ -232,8 +232,14 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const userRole = localStorage.getItem('userRole')
 
+  // 如果是登录页面，直接放行
+  if (to.path.includes('/login')) {
+    next()
+    return
+  }
+
   if (to.meta.requiresAuth && !token) {
-    // 需要登录但未登录
+    // 需要登录但未登录 - 根据目标路由的角色跳转到对应的登录页
     if (to.meta.role === 'admin') {
       next('/admin/login')
     } else if (to.meta.role === 'operator') {
@@ -242,8 +248,14 @@ router.beforeEach((to, from, next) => {
       next('/user/login')
     }
   } else if (to.meta.role && to.meta.role !== userRole) {
-    // 角色不匹配
-    next('/')
+    // 角色不匹配 - 已登录但角色不对，跳转到对应的登录页
+    if (to.meta.role === 'admin') {
+      next('/admin/login')
+    } else if (to.meta.role === 'operator') {
+      next('/operator/login')
+    } else {
+      next('/user/login')
+    }
   } else {
     next()
   }

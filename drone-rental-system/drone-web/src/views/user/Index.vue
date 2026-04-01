@@ -187,30 +187,12 @@
             <p class="dt-desc-text">基于大数据和AI算法，对飞行数据进行深度分析，提供智能化的运营决策支持。</p>
           </div>
           <div class="dt-circle-col">
-            <router-link to="/user/digital-twin" class="dt-circle-wrap">
-              <div class="dt-main-circle">
-                <div class="dt-circle-inner">
-                  <i class="bi bi-cpu-fill dt-main-icon"></i>
-                  <span class="dt-circle-text">点击进入</span>
-                </div>
-              </div>
-              <div class="dt-float-icon dt-icon-1">
-                <i class="bi bi-geo-alt-fill"></i>
-                <span>实时定位</span>
-              </div>
-              <div class="dt-float-icon dt-icon-2">
-                <i class="bi bi-map-fill"></i>
-                <span>轨迹回放</span>
-              </div>
-              <div class="dt-float-icon dt-icon-3">
-                <i class="bi bi-bar-chart-fill"></i>
-                <span>数据统计</span>
-              </div>
-              <div class="dt-float-icon dt-icon-4">
-                <i class="bi bi-grid-fill"></i>
-                <span>场景切换</span>
-              </div>
-            </router-link>
+            <div ref="dtCanvasContainer" class="dt-3d-container">
+              <canvas ref="dtCanvas"></canvas>
+              <router-link to="/user/digital-twin" class="dt-3d-link" @mouseenter="onDtHover" @mouseleave="onDtLeave">
+                <span class="dt-click-text">点击进入</span>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -523,6 +505,7 @@ import { Carousel } from 'bootstrap'
 import { useRouter, useRoute } from 'vue-router'
 import { getActiveBanners, getVehicleMapData, getVehicleList } from '@/api/user'
 import { isSessionValid, clearLoginInfo, getUserInfo } from '@/utils/auth'
+import * as THREE from 'three'
 
 const router = useRouter()
 const route = useRoute()
@@ -550,6 +533,19 @@ const mapScriptLoaded = ref(false)
 const showNotifications = ref(false)
 const unreadCount = ref(0)
 const userNotifications = ref([])
+
+// Three.js 数字孪生3D场景相关
+const dtCanvas = ref(null)
+const dtCanvasContainer = ref(null)
+let dtScene = null
+let dtCamera = null
+let dtRenderer = null
+let dtCenterSphere = null
+let dtIconSpheres = []
+let dtRings = []
+let dtAnimationId = null
+let dtIsHovered = false
+let dtMousePos = { x: 0, y: 0 }
 
 // 获取用户信息（同时检查会话是否有效）
 const loadUserInfo = () => {
@@ -583,6 +579,261 @@ const handleClickOutside = (event) => {
     if (!notificationDropdown && !notificationIcon) {
       showNotifications.value = false
     }
+  }
+}
+
+// ========== Three.js 数字孪生3D场景 ==========
+
+// 初始化3D场景
+const initDigitalTwin3D = () => {
+  if (!dtCanvas.value || !dtCanvasContainer.value) return
+
+  const width = dtCanvasContainer.value.clientWidth
+  const height = dtCanvasContainer.value.clientHeight
+
+  // 创建场景
+  dtScene = new THREE.Scene()
+
+  // 创建相机
+  dtCamera = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000)
+  dtCamera.position.z = 5
+
+  // 创建渲染器
+  dtRenderer = new THREE.WebGLRenderer({
+    canvas: dtCanvas.value,
+    alpha: true,
+    antialias: true
+  })
+  dtRenderer.setSize(width, height)
+  dtRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+  // 添加光源
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+  dtScene.add(ambientLight)
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8)
+  directionalLight.position.set(5, 5, 5)
+  dtScene.add(directionalLight)
+
+  const pointLight = new THREE.PointLight(0x06b6d4, 0.4)
+  pointLight.position.set(-5, -5, 5)
+  dtScene.add(pointLight)
+
+  // 创建中心球体 - 使用页面主色调
+  const centerGeometry = new THREE.SphereGeometry(1, 64, 64)
+  const centerMaterial = new THREE.MeshPhongMaterial({
+    color: 0x3b82f6,
+    emissive: 0x06b6d4,
+    emissiveIntensity: 0.25,
+    shininess: 100
+  })
+  dtCenterSphere = new THREE.Mesh(centerGeometry, centerMaterial)
+  dtScene.add(dtCenterSphere)
+
+  // 创建中心发光效果 - 青色
+  const glowGeometry = new THREE.SphereGeometry(1.12, 32, 32)
+  const glowMaterial = new THREE.MeshBasicMaterial({
+    color: 0x06b6d4,
+    transparent: true,
+    opacity: 0.15
+  })
+  const glowSphere = new THREE.Mesh(glowGeometry, glowMaterial)
+  dtScene.add(glowSphere)
+
+  // 创建环绕圆环
+  const createRing = (radius, tube, color, rotationX = 0, rotationY = 0) => {
+    const ringGeometry = new THREE.TorusGeometry(radius, tube, 16, 100)
+    const ringMaterial = new THREE.MeshPhongMaterial({
+      color: color,
+      transparent: true,
+      opacity: 0.5,
+      shininess: 80
+    })
+    const ring = new THREE.Mesh(ringGeometry, ringMaterial)
+    ring.rotation.x = rotationX
+    ring.rotation.y = rotationY
+    return ring
+  }
+
+  // 添加圆环 - 使用页面主题色
+  dtRings.push(createRing(1.35, 0.02, 0x06b6d4, Math.PI / 2, 0))
+  dtRings.push(createRing(1.55, 0.015, 0x3b82f6, Math.PI / 3, Math.PI / 4))
+  dtRings.push(createRing(1.75, 0.01, 0x06b6d4, Math.PI / 4, Math.PI / 3))
+  dtRings.forEach(ring => dtScene.add(ring))
+
+  // 创建4个周围的图标球体
+  const iconPositions = [
+    { x: 0, y: 1.8, z: 0 },     // 上
+    { x: 1.8, y: 0, z: 0 },     // 右
+    { x: 0, y: -1.8, z: 0 },    // 下
+    { x: -1.8, y: 0, z: 0 }     // 左
+  ]
+
+  // 使用页面主题色 - 蓝青渐变
+  const iconColors = [0x06b6d4, 0x3b82f6, 0x06b6d4, 0x3b82f6]
+  const iconLabels = ['定位', '轨迹', '统计', '场景']
+
+  iconPositions.forEach((pos, index) => {
+    const iconGeometry = new THREE.SphereGeometry(0.3, 32, 32)
+    const iconMaterial = new THREE.MeshPhongMaterial({
+      color: iconColors[index],
+      emissive: iconColors[index],
+      emissiveIntensity: 0.2,
+      shininess: 100
+    })
+    const iconSphere = new THREE.Mesh(iconGeometry, iconMaterial)
+    iconSphere.position.set(pos.x, pos.y, pos.z)
+    iconSphere.userData = {
+      originalPos: { ...pos },
+      index: index,
+      label: iconLabels[index]
+    }
+    dtIconSpheres.push(iconSphere)
+    dtScene.add(iconSphere)
+
+    // 添加图标周围的发光环
+    const iconRingGeometry = new THREE.RingGeometry(0.35, 0.4, 32)
+    const iconRingMaterial = new THREE.MeshBasicMaterial({
+      color: iconColors[index],
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide
+    })
+    const iconRing = new THREE.Mesh(iconRingGeometry, iconRingMaterial)
+    iconRing.position.set(pos.x, pos.y, pos.z + 0.01)
+    iconSphere.userData.ring = iconRing
+    dtScene.add(iconRing)
+  })
+
+  // 添加粒子系统
+  const particlesGeometry = new THREE.BufferGeometry()
+  const particlesCount = 200
+  const posArray = new Float32Array(particlesCount * 3)
+
+  for (let i = 0; i < particlesCount * 3; i += 3) {
+    const angle = Math.random() * Math.PI * 2
+    const radius = 2 + Math.random() * 1.5
+    posArray[i] = Math.cos(angle) * radius
+    posArray[i + 1] = Math.sin(angle) * radius
+    posArray[i + 2] = (Math.random() - 0.5) * 2
+  }
+
+  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3))
+
+  const particlesMaterial = new THREE.PointsMaterial({
+    size: 0.025,
+    color: 0x3b82f6,
+    transparent: true,
+    opacity: 0.5
+  })
+
+  const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial)
+  dtScene.add(particlesMesh)
+  dtScene.userData.particles = particlesMesh
+
+  // 鼠标移动事件
+  const onMouseMove = (event) => {
+    const rect = dtCanvas.value.getBoundingClientRect()
+    dtMousePos.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+    dtMousePos.y = -((event.clientY - rect.top) / rect.height) * 2 + 1
+  }
+
+  dtCanvas.value.addEventListener('mousemove', onMouseMove)
+
+  // 开始动画
+  animateDigitalTwin()
+}
+
+// 3D动画循环
+const animateDigitalTwin = () => {
+  dtAnimationId = requestAnimationFrame(animateDigitalTwin)
+
+  const time = Date.now() * 0.001
+
+  // 中心球体脉动效果
+  if (dtCenterSphere) {
+    const scale = 1 + Math.sin(time * 2) * 0.05
+    dtCenterSphere.scale.set(scale, scale, scale)
+    dtCenterSphere.rotation.y += 0.005
+  }
+
+  // 圆环旋转
+  dtRings.forEach((ring, index) => {
+    ring.rotation.z += 0.002 * (index + 1) * (index % 2 === 0 ? 1 : -1)
+  })
+
+  // 图标球体浮动动画
+  dtIconSpheres.forEach((icon, index) => {
+    const offset = index * Math.PI / 2
+    const floatY = Math.sin(time * 1.5 + offset) * 0.1
+    const floatX = Math.cos(time * 1.5 + offset) * 0.05
+
+    icon.position.x = icon.userData.originalPos.x + floatX
+    icon.position.y = icon.userData.originalPos.y + floatY
+
+    // 图标自转
+    icon.rotation.y += 0.01
+
+    // 图标环旋转
+    if (icon.userData.ring) {
+      icon.userData.ring.position.set(icon.position.x, icon.position.y, icon.position.z + 0.01)
+      icon.userData.ring.rotation.z += 0.02
+    }
+
+    // 鼠标交互
+    if (dtIsHovered) {
+      icon.position.x += dtMousePos.x * 0.3
+      icon.position.y += dtMousePos.y * 0.3
+    }
+  })
+
+  // 粒子旋转
+  if (dtScene.userData.particles) {
+    dtScene.userData.particles.rotation.y += 0.001
+    dtScene.userData.particles.rotation.x += 0.0005
+  }
+
+  // 相机跟随鼠标轻微移动
+  if (dtCamera && !dtIsHovered) {
+    dtCamera.position.x += (dtMousePos.x * 0.5 - dtCamera.position.x) * 0.05
+    dtCamera.position.y += (dtMousePos.y * 0.5 - dtCamera.position.y) * 0.05
+    dtCamera.lookAt(0, 0, 0)
+  }
+
+  dtRenderer.render(dtScene, dtCamera)
+}
+
+// 鼠标悬停事件
+const onDtHover = () => {
+  dtIsHovered = true
+  if (dtCenterSphere) {
+    dtCenterSphere.scale.set(1.15, 1.15, 1.15)
+  }
+}
+
+// 鼠标离开事件
+const onDtLeave = () => {
+  dtIsHovered = false
+}
+
+// 清理3D场景
+const cleanupDigitalTwin3D = () => {
+  if (dtAnimationId) {
+    cancelAnimationFrame(dtAnimationId)
+  }
+  if (dtRenderer) {
+    dtRenderer.dispose()
+  }
+}
+
+// 窗口大小改变时调整
+const handleResize = () => {
+  if (dtCamera && dtRenderer && dtCanvasContainer.value) {
+    const width = dtCanvasContainer.value.clientWidth
+    const height = dtCanvasContainer.value.clientHeight
+    dtCamera.aspect = width / height
+    dtCamera.updateProjectionMatrix()
+    dtRenderer.setSize(width, height)
   }
 }
 
@@ -1115,6 +1366,7 @@ const addVehicleMarkers = (vehicles) => {
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('resize', handleResize)
   document.addEventListener('click', handleClickOutside)
   loadUserInfo()
   fetchBalance()
@@ -1141,6 +1393,9 @@ onMounted(async () => {
   // 初始化地图
   initMap()
 
+  // 初始化数字孪生3D场景
+  initDigitalTwin3D()
+
   // 将 openDetailModal 函数暴露到全局，供地图信息窗口调用
   window.openDetailModal = (id) => {
     const vehicle = drones.value.find(d => d.id === id)
@@ -1161,6 +1416,7 @@ const handleAvatarUpdated = (event) => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', handleResize)
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('user-avatar-updated', handleAvatarUpdated)
   if (carousel) {
@@ -1169,6 +1425,8 @@ onUnmounted(() => {
   if (timeUpdateInterval) {
     clearInterval(timeUpdateInterval)
   }
+  // 清理3D场景
+  cleanupDigitalTwin3D()
   // 清理全局函数
   window.openDetailModal = null
 })
@@ -1665,132 +1923,48 @@ watch(() => route.query.refresh, (refresh) => {
   flex-shrink: 0;
 }
 
-.dt-circle-wrap {
+/* 3D数字孪生容器 */
+.dt-3d-container {
   position: relative;
-  width: 320px;
-  height: 320px;
-  display: block;
-  text-decoration: none;
+  width: 400px;
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.dt-main-circle {
+.dt-3d-container canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.dt-3d-link {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 160px;
-  height: 160px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #06b6d4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 40px rgba(59, 130, 246, 0.3);
-  animation: dt-pulse 2s ease-in-out infinite;
+  text-decoration: none;
+  z-index: 10;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-.dt-circle-inner {
-  text-align: center;
-  color: white;
+.dt-3d-link:hover {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
-.dt-main-icon {
-  font-size: 48px;
+.dt-click-text {
   display: block;
-  margin-bottom: 8px;
-}
-
-.dt-circle-text {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.dt-float-icon {
-  position: absolute;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  background: white;
-  border: 2px solid #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  color: #3b82f6;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
-}
-
-.dt-float-icon span {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 4px;
-  font-weight: 500;
-}
-
-.dt-icon-1 {
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: dt-float1 3s ease-in-out infinite;
-}
-
-.dt-icon-2 {
-  top: 50%;
-  right: 0;
-  transform: translateY(-50%);
-  animation: dt-float2 3s ease-in-out infinite 0.5s;
-}
-
-.dt-icon-3 {
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: dt-float3 3s ease-in-out infinite 1s;
-}
-
-.dt-icon-4 {
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  animation: dt-float4 3s ease-in-out infinite 1.5s;
-}
-
-.dt-circle-wrap:hover .dt-float-icon {
-  border-color: #3b82f6;
-  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.2);
-}
-
-@keyframes dt-pulse {
-  0%, 100% {
-    box-shadow: 0 8px 40px rgba(59, 130, 246, 0.3);
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    box-shadow: 0 8px 50px rgba(59, 130, 246, 0.4);
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-}
-
-@keyframes dt-float1 {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(-10px); }
-}
-
-@keyframes dt-float2 {
-  0%, 100% { transform: translateY(-50%) translateX(0); }
-  50% { transform: translateY(-50%) translateX(10px); }
-}
-
-@keyframes dt-float3 {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(10px); }
-}
-
-@keyframes dt-float4 {
-  0%, 100% { transform: translateY(-50%) translateX(0); }
-  50% { transform: translateY(-50%) translateX(-10px); }
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(6, 182, 212, 0.9));
+  color: white;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+  backdrop-filter: blur(10px);
+  white-space: nowrap;
 }
 
 .features-section {
@@ -2040,27 +2214,13 @@ watch(() => route.query.refresh, (refresh) => {
     max-width: 100%;
     text-align: center;
   }
-  .dt-circle-wrap {
-    width: 280px;
-    height: 280px;
+  .dt-3d-container {
+    width: 300px;
+    height: 300px;
   }
-  .dt-main-circle {
-    width: 130px;
-    height: 130px;
-  }
-  .dt-main-icon {
-    font-size: 36px;
-  }
-  .dt-circle-text {
-    font-size: 12px;
-  }
-  .dt-float-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 18px;
-  }
-  .dt-float-icon span {
-    font-size: 10px;
+  .dt-click-text {
+    font-size: 14px;
+    padding: 10px 20px;
   }
 }
 

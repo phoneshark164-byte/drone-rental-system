@@ -30,8 +30,16 @@
           <div class="col-md-3">
             <select v-model="selectedBrand" class="form-select">
               <option value="">全部品牌</option>
-              <option value="大疆">大疆</option>
-              <option value="道通">道通</option>
+              <option value="大疆">大疆 (DJI)</option>
+              <option value="道通">道通 (Autel)</option>
+              <option value="零度">零度</option>
+              <option value="极飞">极飞 (XAG)</option>
+              <option value="华科尔">华科尔 (Walkera)</option>
+              <option value="昊翔">昊翔 (Yuneec)</option>
+              <option value="派诺特">派诺特 (Parrot)</option>
+              <option value="哈博">哈博 (Hover)</option>
+              <option value="亿航">亿航 (EHang)</option>
+              <option value="零零">零零 (ZeroZero)</option>
             </select>
           </div>
           <div class="col-md-3">
